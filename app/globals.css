@@ -1,0 +1,97 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Paleta editorial creme+dourado */
+    --cream-50: #FDFBF5;
+    --cream-100: #F8F4E9;
+    --cream-200: #F0E9D5;
+
+    --gold-50: #FBF6E8;
+    --gold-100: #F5EBC9;
+    --gold-200: #EDD996;
+    --gold-300: #E0C36A;
+    --gold-500: #C9A44C;
+    --gold-600: #B8912E;
+    --gold-700: #997722;
+    --gold-800: #7A5F1B;
+
+    --ink: #2A2620;
+    --ink-soft: #4A423A;
+    --ink-faint: #7A6E5F;
+
+    --success: #4B7A50;
+
+    /* Fontes: aluna pode trocar via next/font se quiser */
+    --font-serif: "Georgia", serif;
+    --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+    --background: var(--cream-50);
+    --foreground: var(--ink);
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    color: var(--foreground);
+    background: var(--background);
+    font-family: var(--font-sans);
+  }
+
+  ::selection {
+    background: var(--gold-200);
+    color: var(--ink);
+  }
+}
+
+@layer components {
+  .gold-border {
+    border-width: 1px;
+    border-color: rgba(237, 217, 150, 0.6); /* gold-200 a 60% */
+  }
+
+  .gold-border-rich {
+    border-width: 1px;
+    border-color: rgba(224, 195, 106, 0.7); /* gold-300 a 70% */
+  }
+
+  .gold-text-rich {
+    background: linear-gradient(135deg, var(--gold-700), var(--gold-600), var(--gold-800));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .gold-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold-500), transparent);
+  }
+
+  .gold-shadow {
+    box-shadow:
+      0 1px 3px rgba(184, 145, 46, 0.08),
+      0 4px 12px rgba(184, 145, 46, 0.06);
+  }
+
+  .gold-shadow-lg {
+    box-shadow:
+      0 4px 12px rgba(184, 145, 46, 0.10),
+      0 12px 32px rgba(184, 145, 46, 0.08);
+  }
+
+  .gold-glow-hover {
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+  }
+
+  .gold-glow-hover:hover {
+    box-shadow:
+      0 8px 20px rgba(184, 145, 46, 0.14),
+      0 20px 40px rgba(184, 145, 46, 0.10);
+    transform: translateY(-2px);
+  }
+}
