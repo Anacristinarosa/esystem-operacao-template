@@ -1,7 +1,7 @@
+import { randomBytes } from "node:crypto";
 import { NextResponse } from "next/server";
 import { requerFounder } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { PLATAFORMA } from "@/lib/config";
 
 export async function POST(req: Request) {
   await requerFounder();
@@ -21,7 +21,7 @@ export async function POST(req: Request) {
   const passwordFinal =
     (typeof password === "string" && password.trim().length >= 6
       ? password.trim()
-      : process.env.PASSWORD_INICIAL) ?? PLATAFORMA.passwordInicial;
+      : process.env.PASSWORD_INICIAL) ?? randomBytes(9).toString("base64url");
 
   const admin = createAdminClient();
 

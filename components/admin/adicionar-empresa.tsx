@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { PLATAFORMA } from "@/lib/config";
 
 export function AdicionarEmpresa() {
   const router = useRouter();
@@ -58,9 +57,8 @@ export function AdicionarEmpresa() {
           Adicionar empresa
         </p>
         <p className="text-sm text-ink-soft">
-          Escreve o nome da empresa, o contacto e o email. A password inicial é{" "}
-          <strong>{PLATAFORMA.passwordInicial}</strong> — a empresa pode mudá-la
-          depois de entrar.
+          Escreve o nome da empresa, o contacto e o email. A password inicial aparece no aviso depois de adicionares (guarda-a e envia-a
+          por um canal privado). A empresa pode mudá-la depois de entrar.
         </p>
       </div>
 
@@ -91,7 +89,7 @@ export function AdicionarEmpresa() {
         />
         <input
           type="text"
-          placeholder={`password (default: ${PLATAFORMA.passwordInicial})`}
+          placeholder="password (opcional, mínimo 6 caracteres)"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           className="rounded-lg border border-gold-200 bg-white px-4 py-2 text-sm focus:outline-none focus:border-gold-400"

@@ -18,17 +18,33 @@ create table if not exists public.perfis (
 
 alter table public.perfis enable row level security;
 
+-- Segurança: quem é gestora, sem recursão nas políticas (security definer lê perfis sem passar pelo RLS).
+create or replace function public.e_gestora()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (select 1 from public.perfis where id = auth.uid() and role = 'founder')
+$$;
+revoke all on function public.e_gestora() from public, anon;
+grant execute on function public.e_gestora() to authenticated, service_role;
+
+drop policy if exists "Cada um lê o próprio perfil" on public.perfis;
 create policy "Cada um lê o próprio perfil"
   on public.perfis for select
   using (auth.uid() = id);
 
+drop policy if exists "Founder lê todos os perfis" on public.perfis;
 create policy "Founder lê todos os perfis"
   on public.perfis for select
-  using (exists (select 1 from public.perfis p where p.id = auth.uid() and p.role = 'founder'));
+  using (public.e_gestora());
 
+drop policy if exists "Founder atualiza perfis" on public.perfis;
 create policy "Founder atualiza perfis"
   on public.perfis for update
-  using (exists (select 1 from public.perfis p where p.id = auth.uid() and p.role = 'founder'));
+  using (public.e_gestora());
 
 -- Trigger para criar perfil automático ao registar utilizador novo
 create or replace function public.handle_new_user()
@@ -71,18 +87,21 @@ create index if not exists idx_colaboradores_empresa on public.colaboradores(emp
 
 alter table public.colaboradores enable row level security;
 
+drop policy if exists "Empresa vê os seus colaboradores" on public.colaboradores;
 create policy "Empresa vê os seus colaboradores"
   on public.colaboradores for select
   using (auth.uid() = empresa_id);
 
+drop policy if exists "Empresa gere os seus colaboradores" on public.colaboradores;
 create policy "Empresa gere os seus colaboradores"
   on public.colaboradores for all
   using (auth.uid() = empresa_id)
   with check (auth.uid() = empresa_id);
 
+drop policy if exists "Founder vê todos os colaboradores" on public.colaboradores;
 create policy "Founder vê todos os colaboradores"
   on public.colaboradores for select
-  using (exists (select 1 from public.perfis p where p.id = auth.uid() and p.role = 'founder'));
+  using (public.e_gestora());
 
 -- ─────────────── FORNECEDORES (por empresa) ───────────────
 
@@ -106,18 +125,21 @@ create index if not exists idx_fornecedores_estado on public.fornecedores(estado
 
 alter table public.fornecedores enable row level security;
 
+drop policy if exists "Empresa vê os seus fornecedores" on public.fornecedores;
 create policy "Empresa vê os seus fornecedores"
   on public.fornecedores for select
   using (auth.uid() = empresa_id);
 
+drop policy if exists "Empresa gere os seus fornecedores" on public.fornecedores;
 create policy "Empresa gere os seus fornecedores"
   on public.fornecedores for all
   using (auth.uid() = empresa_id)
   with check (auth.uid() = empresa_id);
 
+drop policy if exists "Founder vê todos os fornecedores" on public.fornecedores;
 create policy "Founder vê todos os fornecedores"
   on public.fornecedores for select
-  using (exists (select 1 from public.perfis p where p.id = auth.uid() and p.role = 'founder'));
+  using (public.e_gestora());
 
 -- ─────────────── OCORRÊNCIAS ───────────────
 
@@ -146,18 +168,21 @@ create index if not exists idx_ocorrencias_prioridade on public.ocorrencias(prio
 
 alter table public.ocorrencias enable row level security;
 
+drop policy if exists "Empresa vê as suas ocorrências" on public.ocorrencias;
 create policy "Empresa vê as suas ocorrências"
   on public.ocorrencias for select
   using (auth.uid() = empresa_id);
 
+drop policy if exists "Empresa gere as suas ocorrências" on public.ocorrencias;
 create policy "Empresa gere as suas ocorrências"
   on public.ocorrencias for all
   using (auth.uid() = empresa_id)
   with check (auth.uid() = empresa_id);
 
+drop policy if exists "Founder vê todas as ocorrências" on public.ocorrencias;
 create policy "Founder vê todas as ocorrências"
   on public.ocorrencias for select
-  using (exists (select 1 from public.perfis p where p.id = auth.uid() and p.role = 'founder'));
+  using (public.e_gestora());
 
 -- ─────────────── RISCOS ───────────────
 
@@ -182,18 +207,21 @@ create index if not exists idx_riscos_estado on public.riscos(estado);
 
 alter table public.riscos enable row level security;
 
+drop policy if exists "Empresa vê os seus riscos" on public.riscos;
 create policy "Empresa vê os seus riscos"
   on public.riscos for select
   using (auth.uid() = empresa_id);
 
+drop policy if exists "Empresa gere os seus riscos" on public.riscos;
 create policy "Empresa gere os seus riscos"
   on public.riscos for all
   using (auth.uid() = empresa_id)
   with check (auth.uid() = empresa_id);
 
+drop policy if exists "Founder vê todos os riscos" on public.riscos;
 create policy "Founder vê todos os riscos"
   on public.riscos for select
-  using (exists (select 1 from public.perfis p where p.id = auth.uid() and p.role = 'founder'));
+  using (public.e_gestora());
 
 -- ─────────────── AÇÕES ───────────────
 
@@ -220,18 +248,21 @@ create index if not exists idx_acoes_estado on public.acoes(estado);
 
 alter table public.acoes enable row level security;
 
+drop policy if exists "Empresa vê as suas ações" on public.acoes;
 create policy "Empresa vê as suas ações"
   on public.acoes for select
   using (auth.uid() = empresa_id);
 
+drop policy if exists "Empresa gere as suas ações" on public.acoes;
 create policy "Empresa gere as suas ações"
   on public.acoes for all
   using (auth.uid() = empresa_id)
   with check (auth.uid() = empresa_id);
 
+drop policy if exists "Founder vê todas as ações" on public.acoes;
 create policy "Founder vê todas as ações"
   on public.acoes for select
-  using (exists (select 1 from public.perfis p where p.id = auth.uid() and p.role = 'founder'));
+  using (public.e_gestora());
 
 -- ─────────────── AVALIAÇÕES DE FORNECEDOR ───────────────
 
@@ -254,18 +285,21 @@ create index if not exists idx_avaliacoes_fornecedor on public.avaliacoes_fornec
 
 alter table public.avaliacoes_fornecedor enable row level security;
 
+drop policy if exists "Empresa vê as suas avaliações" on public.avaliacoes_fornecedor;
 create policy "Empresa vê as suas avaliações"
   on public.avaliacoes_fornecedor for select
   using (auth.uid() = empresa_id);
 
+drop policy if exists "Empresa gere as suas avaliações" on public.avaliacoes_fornecedor;
 create policy "Empresa gere as suas avaliações"
   on public.avaliacoes_fornecedor for all
   using (auth.uid() = empresa_id)
   with check (auth.uid() = empresa_id);
 
+drop policy if exists "Founder vê todas as avaliações" on public.avaliacoes_fornecedor;
 create policy "Founder vê todas as avaliações"
   on public.avaliacoes_fornecedor for select
-  using (exists (select 1 from public.perfis p where p.id = auth.uid() and p.role = 'founder'));
+  using (public.e_gestora());
 
 -- ─────────────── VIEW: EMPRESAS (para o admin) ───────────────
 
@@ -284,6 +318,7 @@ select
 from auth.users u
 join public.perfis p on p.id = u.id
 where p.role = 'empresa'
+  and public.e_gestora()
 order by u.created_at desc;
 
 -- Supabase, desde 30/10/2026: as tabelas novas já não recebem permissões sozinhas.
@@ -295,3 +330,10 @@ grant all on all routines in schema public to anon, authenticated, service_role;
 alter default privileges in schema public grant all on tables to anon, authenticated, service_role;
 alter default privileges in schema public grant all on sequences to anon, authenticated, service_role;
 alter default privileges in schema public grant all on routines to anon, authenticated, service_role;
+
+-- Segurança: o que os grants gerais acima abrem a mais é fechado aqui.
+-- A lista de contas (com emails) só a gestora a vê; o anon nunca.
+revoke all on public.empresas_view from anon;
+grant select on public.empresas_view to authenticated, service_role;
+revoke all on function public.e_gestora() from public, anon;
+grant execute on function public.e_gestora() to authenticated, service_role;

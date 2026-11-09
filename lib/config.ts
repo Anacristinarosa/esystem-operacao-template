@@ -29,8 +29,6 @@ export const PLATAFORMA = {
     email: "tu@teudominio.pt",
   },
 
-  /** Password inicial que dás às empresas cliente para o primeiro login. */
-  passwordInicial: "muda-me-2026",
 
   /**
    * As 3 entidades possíveis que os registos podem apontar.
